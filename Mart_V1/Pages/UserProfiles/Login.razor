@@ -1,0 +1,55 @@
+﻿@using BCrypt.Net
+@using Mart_V1.Authentication
+@using Mart_V1.Services.UserProfiles
+@using Mart_V1.Data.Models.UserProfiles;
+@using Blazored.Modal;
+@using Blazored.Modal.Services;
+@inject UserServices userService;
+@inject IJSRuntime js
+@inject AuthenticationStateProvider authStateProvider
+@inject NavigationManager navManager
+
+
+
+<form>
+    <div class="form-group">
+        <label for="username">Gebruikersnaam:</label>
+        <input type="text" class="form-control" id="username" @bind="model.UserName">
+    </div>
+    <div class="form-group">
+        <label for="password">Wachtwoord:</label>
+        <input type="password" class="form-control" id="password" @bind="model.Password">
+    </div>
+    <button type="button" class="btn btn-primary" @onclick="Authenticate">Inloggen</button>
+</form>
+
+
+@code {
+    private class Model
+    {
+        public string UserName { get; set; }
+        public string Password { get; set; }
+    }
+    private Model model = new Model();
+    private async Task Authenticate()
+    {
+        var userAccount = userService.GetUserByUserName(model.UserName);
+
+        if (userAccount != null && BCrypt.Verify(model.Password, userAccount.Password))
+        {
+            var customAuthStateProvider = (CustomAuthenticationStateProvider)authStateProvider;
+            await customAuthStateProvider.UpdateAuthenticationState(new UserSession
+                {
+                    UserName = userAccount.UserName,
+                    Role = userAccount.Role
+                });
+
+            navManager.NavigateTo("/", true);
+        }
+
+        await js.InvokeVoidAsync("alert", "Invalid User Name or Password");
+        return;
+
+
+    }
+}

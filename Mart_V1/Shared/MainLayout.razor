@@ -1,0 +1,56 @@
+﻿@using Mart_V1.Authentication
+@inherits LayoutComponentBase
+@using Mart_V1.Pages.UserProfiles
+@inject NavigationManager navManager
+@inject AuthenticationStateProvider authStateProvider
+
+<PageTitle>Mart_V1</PageTitle>
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4">
+
+            <AuthorizeView>
+                <Authorized>
+                    <a @onclick="Logout" href="javascript:void(0)">Logout</a>
+                </Authorized>
+                <NotAuthorized>
+                    <button @onclick="ShowLogin" class="btn btn-primary">Login</button>
+                </NotAuthorized>
+            </AuthorizeView>
+            
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+@code {
+    [CascadingParameter] public IModalService Modal { get; set; } = default!;
+
+    void ShowLogin()
+    {
+        var options = new ModalOptions()
+            {
+                Size = ModalSize.Medium,
+                Position = ModalPosition.Middle
+            };
+
+        Modal.Show<Login>("Login", options);
+    }
+    private async Task Logout()
+    {
+        var customAuthStateProvider = (CustomAuthenticationStateProvider)authStateProvider;
+        await customAuthStateProvider.UpdateAuthenticationState(null);
+        navManager.NavigateTo("/", true);
+    }
+
+
+}
+

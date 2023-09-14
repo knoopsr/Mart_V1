@@ -1,0 +1,36 @@
+﻿@page "/adduser"
+@using Mart_V1.Services.UserProfiles;
+@using Mart_V1.Data.Models.UserProfiles;
+@using BCrypt.Net;
+@using Blazored.Modal;
+@using Blazored.Modal.Services;
+@inject UserServices userService;
+
+
+
+<EditForm Model=@users OnValidSubmit="AddUserForm">
+    <label for="NameInput">Gebruikersnaam:</label>
+    <InputText id="NameInput" class="form-control" @bind-Value="@users.UserName"></InputText>
+    <label for="EmailInput">Email Adres:</label>
+    <InputText id="EmailInput" class="form-control" @bind-Value="@users.Email"></InputText>
+    <label for="PasswordInput">Password:</label>
+    <InputText type="password" id="PasswordInput" class="form-control" @bind-Value="@users.Password"></InputText>
+    <button type="submit" class="btn-primary">Add User</button>
+</EditForm>
+
+@code {
+    Users users = new Users();
+
+
+    public void AddUserForm(EditContext editContext)
+    {
+        var newUser = (Users)editContext.Model;
+        newUser.CreatedDate = DateTime.Now;
+        newUser.Password = BCrypt.HashPassword(users.Password);
+
+        userService.AddUser(newUser);
+        users = new Users();
+
+    }
+
+}
